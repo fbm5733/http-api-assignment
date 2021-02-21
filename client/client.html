@@ -5,8 +5,82 @@
   <link rel="stylesheet" type="text/css" href="/style.css">
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
-  <script type="text/babel">
+  <script type="text/babel">  
+    const handleResponse = (xhr) => {
+      const content = document.querySelector("#content");
 
+      const type = xhr.getResponseHeader('content-type');
+
+      let message = "";
+      //sets the message to display for JSON
+      if(type === 'application/json') {
+
+        const obj = JSON.parse(xhr.response);
+
+        if(obj.message)
+        {
+          message = obj.message;
+        }
+      }
+      //sets the message to dipsplay for XML
+      else if (type === 'text/xml') {
+        let newMessage = xhr.responseXML.querySelector('message');
+        if(newMessage)
+        {
+          message = newMessage.textContent;
+        }
+      }
+
+      //handles each code
+      switch(xhr.status) {
+        case 200:
+          content.innerHTML = `<b>Success</b><p>Message: ${message}</p>`;
+        break;
+        case 400:
+          content.innerHTML = `<b>Bad Request</b><p>Message: ${message}</p>`;
+        break;
+        case 401:
+          content.innerHTML = `<b>Unauthorized</b><p>Message: ${message}</p>`;
+        break;
+        case 403:
+          content.innerHTML = `<b>Forbidden</b><p>Message: ${message}</p>`;
+        break;
+        case 404:
+          content.innerHTML = `<b>Resource Not Found</b><p>Message: ${message}</p>`;
+        break;
+        case 500:
+          content.innerHTML = `<b>Internal Server Error</b><p>Message: ${message}</p>`;
+        break;
+        case 501:
+          content.innerHTML = `<b>Not Implemented</b><p>Message: ${message}</p>`;
+        break;
+      }
+    }
+
+    const sendAjax = () => {
+      //uses the chosen options
+      let url = document.querySelector("#page").value;
+      let type = document.querySelector("#type").value;
+
+      const xhr = new XMLHttpRequest();
+
+      //uses the right URL
+      xhr.open('GET', url);
+
+      //sets the accepted type
+      xhr.setRequestHeader("accept", type);
+
+      //sets up callback
+      xhr.onload = () => handleResponse(xhr);
+
+      xhr.send();
+    }
+
+    const init = () => {
+      document.querySelector("#send").addEventListener('click', sendAjax);
+    }
+
+      window.onload = init;
   </script>
 </head>
 <body>
